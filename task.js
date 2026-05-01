@@ -6,64 +6,72 @@ const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-// app.use(session({
-//     secret: 'your_secret_key',
-//     resave: false,
-//     saveUninitialized: true,
-   
-// }));
 
+app.use(session({
+    secret: 'secret_key'
+}));
 
-app.get('/',(req,res)=>{
-    const{username,role} = req.body;
+app.get('/', (req, res) => {
+    res.send("Welcome");
+});
+
+app.post('/login', (req, res) => {
+
+    const { username, role } = req.body;
+
+    if (!username || !role) {
+        return res.send("Please provide username and role");
+    }
 
     req.session.user = {
-        username: username,
-        role:role,
+        username,
+        role,
     };
 
-    res.cookie("user",username);
+    res.cookie("user", username);
 
     res.send("Login Successful");
-})
+});
+app.get('/courses', (req, res) => {
 
-app.get('/courses',(req,res)=>{
-    if(!req.session.user){
+    if (!req.session.user) {
         return res.send("Please login First");
     }
+
     res.send("You can view Courses");
-})
+});
 
-app.get('create-course',(req,resp)=>{
-    if(!req.sesssion.user){
-        res.send("Please login First");
+app.get('/create-course', (req, res) => {
+
+    
+    if (!req.sesssion.user) {
+        return res.send("Please login First");
     }
- res.send("Course Created Successfully");
+
+    res.send("Course Created Successfully");
 });
 
+app.get('/profile', (req, res) => {
 
-app.get("/profile", (req, res) => {
-  if (!req.session.user) {
-    return res.send("Please login first");
-  }
+    if (!req.session.user) {
+        return res.send("Please login first");
+    }
 
-  res.send(
-    `Username: ${req.session.user.username}, Role: ${req.session.user.role}`
-  );
+    res.send(
+        `Username: ${req.session.user.username}, Role: ${req.session.user.role}`
+    );
 });
 
+app.get('/logout', (req, res) => {
 
-app.get("/logout", (req, res) => {
+    req.session.destroy(() => {
 
-  req.session.destroy(() => {
-   
-    res.clearCookie("connect.sid");
+        res.clearCookie("connect.sid");
 
-    res.send("Logged out successfully");
-  });
+        res.send("Logged out successfully");
+    });
 });
-
 
 app.listen(3000, () => {
-  console.log("Server running on port 3000");
+    console.log("Server running on port 3000");
 });
